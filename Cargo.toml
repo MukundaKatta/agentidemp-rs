@@ -1,0 +1,21 @@
+[package]
+name = "agentidemp"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["MukundaKatta"]
+description = "Idempotency keys for LLM agent retries. Deterministic content-derived keys (UUIDv5 or sha256-hex) so retries dedupe at the provider."
+license = "MIT"
+repository = "https://github.com/MukundaKatta/agentidemp-rs"
+homepage = "https://github.com/MukundaKatta/agentidemp-rs"
+documentation = "https://docs.rs/agentidemp"
+readme = "README.md"
+keywords = ["llm", "idempotency", "retry", "agent", "uuid"]
+categories = ["api-bindings", "no-std"]
+
+[dependencies]
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4", "v5"] }
+
+[dev-dependencies]
+serde_json = "1"
