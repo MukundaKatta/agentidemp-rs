@@ -72,3 +72,13 @@ The scope and content are separated by a null byte so `"ab" + "c"` doesn't colli
 ## License
 
 MIT
+
+## Repository Health
+
+This repository includes a dependency-free health check for core documentation, metadata, and CI wiring. Run it locally before publishing changes:
+
+```sh
+python3 scripts/check_repository_health.py
+```
+
+The same check runs in GitHub Actions on pushes and pull requests.
