@@ -70,3 +70,28 @@ fn scoped_separator_prevents_collisions() {
     let b = scoped_sha256_hex("a", b"bc");
     assert_ne!(a, b);
 }
+
+#[test]
+fn scoped_sha256_hex_format() {
+    let k = scoped_sha256_hex("user-1", b"payload");
+    assert!(k.starts_with("ik_"));
+    assert_eq!(k.len(), 35);
+    assert!(k[3..].chars().all(|c| c.is_ascii_hexdigit()));
+}
+
+#[test]
+fn scoped_known_vector() {
+    // Equivalent to sha256("user-1" || 0x00 || "payload"), first 16 bytes.
+    let k = scoped_sha256_hex("user-1", b"payload");
+    let manual = sha256_hex(b"user-1\0payload");
+    assert_eq!(k, manual);
+}
+
+#[test]
+fn uuid_v5_depends_on_namespace() {
+    // A different namespace must yield a different UUID for the same content.
+    let other_ns = uuid::Uuid::from_bytes([1u8; 16]);
+    let other = uuid_v5(&other_ns, b"x");
+    let anthropic = uuid_v5(&NAMESPACE_ANTHROPIC, b"x");
+    assert_ne!(other, anthropic);
+}

@@ -33,14 +33,28 @@
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
 
+use std::fmt::Write as _;
+
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
+
+/// Format the first 16 bytes of `digest` as the `ik_`-prefixed hex string
+/// returned by [`sha256_hex`] and [`scoped_sha256_hex`].
+fn ik_hex(digest: &[u8]) -> String {
+    // "ik_" (3) + 16 bytes * 2 hex chars (32) = 35 chars.
+    let mut s = String::with_capacity(35);
+    s.push_str("ik_");
+    for b in &digest[..16] {
+        // Writing into the pre-sized buffer avoids a per-byte allocation.
+        let _ = write!(s, "{b:02x}");
+    }
+    s
+}
 
 /// A stable namespace UUID for Anthropic-bound requests. Use as the first
 /// arg to [`uuid_v5`] to scope your keys.
 pub const NAMESPACE_ANTHROPIC: Uuid = Uuid::from_bytes([
-    0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1,
-    0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
+    0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
 ]);
 // (NB: This is the standard DNS namespace UUID; we re-export it as a
 // convenient anchor for users who don't want to think about namespaces.)
@@ -50,17 +64,13 @@ pub const NAMESPACE_ANTHROPIC: Uuid = Uuid::from_bytes([
 /// don't require a UUID format.
 ///
 /// Returns a 35-character string (3 prefix + 32 hex).
+#[must_use]
 pub fn sha256_hex(content: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(content);
     let digest = hasher.finalize();
     // First 16 bytes of the digest = 32 hex chars
-    let mut s = String::with_capacity(35);
-    s.push_str("ik_");
-    for b in &digest[..16] {
-        s.push_str(&format!("{b:02x}"));
-    }
-    s
+    ik_hex(&digest)
 }
 
 /// Compute a deterministic [UUID v5][rfc] for `content` under `namespace`.
@@ -69,12 +79,14 @@ pub fn sha256_hex(content: &[u8]) -> String {
 /// the destination expects a UUID-shaped idempotency key.
 ///
 /// [rfc]: https://datatracker.ietf.org/doc/html/rfc4122#section-4.3
+#[must_use]
 pub fn uuid_v5(namespace: &Uuid, content: &[u8]) -> Uuid {
     Uuid::new_v5(namespace, content)
 }
 
 /// Generate a random UUID v4. For when you don't want determinism — e.g.
 /// the very first attempt where you have no prior key to reuse.
+#[must_use]
 pub fn random() -> Uuid {
     Uuid::new_v4()
 }
@@ -84,16 +96,12 @@ pub fn random() -> Uuid {
 /// per-scope deduplication.
 ///
 /// Equivalent to `sha256_hex` over `scope || 0x00 || content`.
+#[must_use]
 pub fn scoped_sha256_hex(scope: &str, content: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(scope.as_bytes());
     hasher.update([0u8]); // separator so "ab"+"c" != "a"+"bc"
     hasher.update(content);
     let digest = hasher.finalize();
-    let mut s = String::with_capacity(35);
-    s.push_str("ik_");
-    for b in &digest[..16] {
-        s.push_str(&format!("{b:02x}"));
-    }
-    s
+    ik_hex(&digest)
 }
