@@ -28,7 +28,7 @@ let bytes = serde_json::to_vec(&body).unwrap();
 
 // Short hex form (35 chars total, "ik_" prefix + 32 hex):
 let key1 = sha256_hex(&bytes);
-// → "ik_a3f9c1d8b2e7f046189f43a2b8e7c106"
+// → "ik_5c181ca05655562a20cd9639a1bea983"
 
 // UUID v5 form (for `Idempotency-Key: <uuid>` headers):
 let key2 = uuid_v5(&NAMESPACE_ANTHROPIC, &bytes);

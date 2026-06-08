@@ -27,6 +27,18 @@ fn sha256_hex_known_vector() {
 }
 
 #[test]
+fn readme_quick_start_vector() {
+    // Pins the exact `sha256_hex` output shown in the README quick start so the
+    // documented value can't silently drift away from the implementation.
+    let body = serde_json::json!({
+        "model": "claude-sonnet-4-20250514",
+        "messages": [{"role": "user", "content": "hi"}]
+    });
+    let bytes = serde_json::to_vec(&body).unwrap();
+    assert_eq!(sha256_hex(&bytes), "ik_5c181ca05655562a20cd9639a1bea983");
+}
+
+#[test]
 fn uuid_v5_is_deterministic() {
     let a = uuid_v5(&NAMESPACE_ANTHROPIC, b"some-payload");
     let b = uuid_v5(&NAMESPACE_ANTHROPIC, b"some-payload");

@@ -64,6 +64,12 @@ pub const NAMESPACE_ANTHROPIC: Uuid = Uuid::from_bytes([
 /// don't require a UUID format.
 ///
 /// Returns a 35-character string (3 prefix + 32 hex).
+///
+/// ```
+/// # use agentidemp::sha256_hex;
+/// // sha256("abc") = ba7816bf8f01cfea414140de5dae2223...; first 16 bytes are hex-encoded.
+/// assert_eq!(sha256_hex(b"abc"), "ik_ba7816bf8f01cfea414140de5dae2223");
+/// ```
 #[must_use]
 pub fn sha256_hex(content: &[u8]) -> String {
     let mut hasher = Sha256::new();
